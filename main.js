@@ -24,8 +24,14 @@ app.on('ready', () => {
   //     nodeIntegration: true
   //   }
   // })
+  if(isDev) {
+    autoUpdater.updateConfigPath = path.join(__dirname, 'dev-app-update.yml')
+  }
+  autoUpdater.on('checking-for-update', () => {
+    console.log('Checking for update...')
+  })
   autoUpdater.autoDownload = false
-  autoUpdater.checkForUpdatesAndNotify()
+  autoUpdater.checkForUpdates()
   autoUpdater.on('error', (error) => {
     dialog.showErrorBox('Error: ', error === null ? 'unkown': error)
   })
@@ -46,6 +52,18 @@ app.on('ready', () => {
       type: `info`,
       message: `当前已经是最新版本`,
       title: `没有新版本`
+    })
+  })
+  autoUpdater.on('download-progress', (progressObj) => {
+    console.log(progressObj.bytesPerSecond)
+  })
+  autoUpdater.on('update-downloaded', () => {
+    dialog.showMessageBox({
+      type: `info`,
+      message: `更新下载完毕，应用将重启并进行安装`,
+      title: `安装更新`
+    }, () => {
+      setImmediate(() => {autoUpdater.quitAndInstall()})
     })
   })
 
